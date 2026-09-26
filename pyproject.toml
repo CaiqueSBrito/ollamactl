@@ -17,5 +17,9 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 
+[project.urls]
+Homepage = "https://github.com/CaiqueSBrito/ollamactl"
+Issues = "https://github.com/CaiqueSBrito/ollamactl/issues"
+
 [tool.setuptools]
 packages = ["ollamactl"]

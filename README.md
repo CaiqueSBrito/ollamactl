@@ -12,7 +12,19 @@ Zero-dependency Python library to install, run and talk to [Ollama](https://olla
 ## Install
 
 ```bash
-pip install ollamactl
+pip install git+https://github.com/CaiqueSBrito/ollamactl.git
+```
+
+To pin a version in `requirements.txt`, add a tag or commit after `@`:
+
+```text
+ollamactl @ git+https://github.com/CaiqueSBrito/ollamactl.git@<tag-or-commit>
+```
+
+For development, from a clone:
+
+```bash
+pip install -e .
 ```
 
 ## Quickstart
