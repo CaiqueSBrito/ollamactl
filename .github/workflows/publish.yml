@@ -1,0 +1,49 @@
+# Publishes to PyPI when a GitHub Release is published, via Trusted Publishing (no token stored).
+#
+# One-time setup on pypi.org > Your account > Publishing > "Add a new pending publisher":
+#   PyPI project name: ollamactl    Owner: CaiqueSBrito    Repository name: ollamactl
+#   Workflow name: publish.yml      Environment name: pypi
+#
+# Each release: bump `version` in pyproject.toml, commit, then publish a GitHub Release
+# tagged v<version> (e.g. v0.1.0). The build fails if the tag and the version disagree.
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.x"
+      - name: Check tag matches pyproject version
+        run: |
+          version=$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')
+          if [ "${GITHUB_REF_NAME#v}" != "$version" ]; then
+            echo "::error::Release tag $GITHUB_REF_NAME does not match pyproject version $version"
+            exit 1
+          fi
+      - run: python test_ollamactl.py
+      - run: python -m pip install build && python -m build
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+  # separate job: the build runs third-party code (setuptools), so only this job can publish
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write  # lets PyPI verify this workflow instead of a stored API token
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
